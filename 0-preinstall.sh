@@ -76,6 +76,7 @@ mount -t btrfs "${DISK}3" /mnt
 fi
 ls /mnt | xargs btrfs subvolume delete
 btrfs subvolume create /mnt/@
+btrfs subvolume create /mnt/home
 umount /mnt
 ;;
 *)
@@ -91,6 +92,8 @@ mount -t btrfs -o subvol=@ -L ROOT /mnt
 mkdir /mnt/boot
 mkdir /mnt/boot/efi
 mount -t vfat -L EFIBOOT /mnt/boot/
+mkdir /mnt/home
+mount -t btrfs -o subvol=home -L ROOT /mnt/home
 
 if ! grep -qs '/mnt' /proc/mounts; then
     echo "Drive is not mounted can not continue"
@@ -106,6 +109,17 @@ echo "--------------------------------------"
 pacstrap /mnt base base-devel linux linux-firmware vim nano sudo archlinux-keyring wget libnewt --noconfirm --needed
 genfstab -U /mnt >> /mnt/etc/fstab
 echo "keyserver hkp://keyserver.ubuntu.com" >> /mnt/etc/pacman.d/gnupg/gpg.conf
+echo "--------------------------------------"
+echo "-- Bootloader Systemd Installation  --"
+echo "--------------------------------------"
+bootctl install --esp-path=/mnt/boot
+[ ! -d "/mnt/boot/loader/entries" ] && mkdir -p /mnt/boot/loader/entries
+cat <<EOF > /mnt/boot/loader/entries/arch.conf
+title Arch Linux
+linux /vmlinuz-linux
+initrd  /initramfs-linux.img
+options root=LABEL=ROOT rw rootflags=subvol=@
+EOF
 cp -R ${SCRIPT_DIR} /mnt/root/ArchTitus
 cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 echo "--------------------------------------"
