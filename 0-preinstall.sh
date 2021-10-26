@@ -43,7 +43,11 @@ lsblk
 echo "Please enter disk to work on: (example /dev/sda)"
 read DISK
 echo "THIS WILL FORMAT AND DELETE ALL DATA ON THE DISK"
-read -p "are you sure you want to continue (Y/N):" formatdisk
+echo "Select an option to continue:"
+echo "A - Format all, create GPT, partiions and subvolumes"
+echo "K - Keep GPT, boot partition and home subvolume, format @ subvolume"
+echo "N - Do nothing"
+read -p "Select to contine (A/K/N):" formatdisk
 case $formatdisk in
 
 y|Y|yes|Yes|YES)
@@ -81,9 +85,48 @@ mount -t btrfs "${DISK}2" /mnt
 fi
 ls /mnt | xargs btrfs subvolume delete
 btrfs subvolume create /mnt/@
-btrfs subvolume create /mnt/home
+btrfs subvolume create /mnt/@home
 umount /mnt
 ;;
+k|K|keep|Keep|KEEP)
+echo "--------------------------------------"
+echo -e "\Keeping home and boot...\n$HR"
+echo "--------------------------------------"
+
+# check for boot partition
+if gdisk -l ${DISK} | grep -q 'EF00'; then
+  echo "Boot partition found"
+else
+  echo "Boot partition not found!!!"
+  echo "Rebooting in 3 Seconds ..." && sleep 1
+  echo "Rebooting in 2 Seconds ..." && sleep 1
+  echo "Rebooting in 1 Second ..." && sleep 1
+  reboot now
+fi
+
+# check for root partition
+if gdisk -l ${DISK} | grep -q '8300'; then
+  echo "Root partition found"
+else
+  echo "Root partition not found!!!"
+  echo "Rebooting in 3 Seconds ..." && sleep 1
+  echo "Rebooting in 2 Seconds ..." && sleep 1
+  echo "Rebooting in 1 Second ..." && sleep 1
+  reboot now
+fi
+
+# check for home subvolume
+if mount -t btrfs -o subvol=@home -L ROOT /mnt/home
+  umount /mnt/home
+  echo "Home subvolume found"
+else
+  echo "Home subvolume not found!!!"
+  echo "Rebooting in 3 Seconds ..." && sleep 1
+  echo "Rebooting in 2 Seconds ..." && sleep 1
+  echo "Rebooting in 1 Second ..." && sleep 1
+  reboot now
+fi
+
 *)
 echo "Rebooting in 3 Seconds ..." && sleep 1
 echo "Rebooting in 2 Seconds ..." && sleep 1
@@ -98,7 +141,7 @@ mkdir /mnt/boot
 mkdir /mnt/boot/efi
 mount -t vfat -L UEFISYS /mnt/boot/
 mkdir /mnt/home
-mount -t btrfs -o subvol=home -L ROOT /mnt/home
+mount -t btrfs -o subvol=@home -L ROOT /mnt/home
 
 if ! grep -qs '/mnt' /proc/mounts; then
     echo "Drive is not mounted can not continue"
