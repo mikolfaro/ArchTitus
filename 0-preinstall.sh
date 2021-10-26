@@ -95,9 +95,9 @@ echo "--------------------------------------"
 
 # check for boot partition
 if gdisk -l ${DISK} | grep -q 'EF00'; then
-  echo "Boot partition found"
+  ;;
 else
-  echo "Boot partition not found!!!"
+  echo "Boot partition not found"
   echo "Rebooting in 3 Seconds ..." && sleep 1
   echo "Rebooting in 2 Seconds ..." && sleep 1
   echo "Rebooting in 1 Second ..." && sleep 1
@@ -106,9 +106,9 @@ fi
 
 # check for root partition
 if gdisk -l ${DISK} | grep -q '8300'; then
-  echo "Root partition found"
+  ;;
 else
-  echo "Root partition not found!!!"
+  echo "Root partition not found"
   echo "Rebooting in 3 Seconds ..." && sleep 1
   echo "Rebooting in 2 Seconds ..." && sleep 1
   echo "Rebooting in 1 Second ..." && sleep 1
@@ -116,22 +116,28 @@ else
 fi
 
 # check for home subvolume
-if mount -t btrfs -o subvol=@home -L ROOT /mnt/home
-  umount /mnt/home
-  echo "Home subvolume found"
+if mount -t btrfs -o subvol=@home -L ROOT /mnt; then
+  umount /mnt
 else
-  echo "Home subvolume not found!!!"
+  echo "Home subvolume not found"
   echo "Rebooting in 3 Seconds ..." && sleep 1
   echo "Rebooting in 2 Seconds ..." && sleep 1
   echo "Rebooting in 1 Second ..." && sleep 1
   reboot now
 fi
 
+mount -t btrfs "${DISK}2" /mnt
+btrfs subvolume delete /mnt/@
+btrfs subvolume create /mnt/@
+umount /mnt\
+
+;;
 *)
 echo "Rebooting in 3 Seconds ..." && sleep 1
 echo "Rebooting in 2 Seconds ..." && sleep 1
 echo "Rebooting in 1 Second ..." && sleep 1
 reboot now
+
 ;;
 esac
 
