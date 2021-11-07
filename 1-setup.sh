@@ -97,6 +97,7 @@ PKGS=(
 'egl-wayland'
 'exfat-utils'
 'extra-cmake-modules'
+'ffmpegthumbs'              # Video Quickview
 'filelight'
 'firefox'
 'firefox-developer-edition'
@@ -123,6 +124,7 @@ PKGS=(
 'kate'
 'kcodecs'
 'kcoreaddons'
+'kdegraphics-thumbnailers'     # Image quickview
 'kdeplasma-addons'
 'kde-gtk-config'
 'kinfocenter'
