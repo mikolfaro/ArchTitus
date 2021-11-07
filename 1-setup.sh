@@ -37,11 +37,7 @@ sed -i 's/^#it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
 timedatectl --no-ask-password set-timezone Europe/Rome
 timedatectl --no-ask-password set-ntp 1
-<<<<<<< HEAD
 localectl --no-ask-password set-locale LANG="en_US.UTF-8" LC_TIME="it_IT.UTF-8"
-=======
-localectl --no-ask-password set-locale LANG="en_US.UTF-8" LC_COLLATE="en_US.UTF-8" LC_TIME="it_IT.UTF-8"
->>>>>>> 6c7c781 (Force IT keyboard and date formats)
 
 # Set keymaps
 localectl --no-ask-password set-keymap it
